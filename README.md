@@ -19,6 +19,7 @@ OpenSky API -> Python -> PostgreSQL (raw) -> dbt -> Star Schema -> Metabase
 
 ## Project Structure
 
+```
 flight-pipeline/
 ├── docker/              # Docker Compose files
 ├── ingestion/           # Python extraction and load scripts
@@ -28,6 +29,7 @@ flight-pipeline/
 ├── .env.example         # Environment variables template
 ├── requirements.txt     # Python dependencies
 └── README.md
+```
 
 
 ### Prerequisites

@@ -1,0 +1,15 @@
+# HTTP requests
+requests==2.32.3
+
+# PostgreSQL
+psycopg2-binary==2.9.9
+SQLAlchemy==2.0.35
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Data manipulation
+pandas==2.2.3
+
+# Logging
+loguru==0.7.2

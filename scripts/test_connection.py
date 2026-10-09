@@ -9,7 +9,7 @@ import os
 import sys
 from pathlib import Path
 
-import psycopg2
+import psycopg
 from dotenv import load_dotenv
 from loguru import logger
 
@@ -21,12 +21,12 @@ load_dotenv(dotenv_path=env_path)
 def test_connection():
     """Test connection to PostgreSQL and print basic info."""
     try:
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             host="localhost",
             port=os.getenv("POSTGRES_PORT", "5432"),
             user=os.getenv("POSTGRES_USER"),
             password=os.getenv("POSTGRES_PASSWORD"),
-            database=os.getenv("POSTGRES_DB"),
+            dbname=os.getenv("POSTGRES_DB"),
         )
         cursor = conn.cursor()
 

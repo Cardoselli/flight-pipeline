@@ -2,7 +2,7 @@
 requests==2.32.3
 
 # PostgreSQL
-psycopg2-binary==2.9.9
+psycopg[binary]==3.2.13
 SQLAlchemy==2.0.35
 
 # Environment variables

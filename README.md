@@ -41,15 +41,14 @@ flight-pipeline/
 ### Setup
 
 1. Clone the repository:
-   git clone https://github.com/your-username/flight-pipeline.git
+   git clone https://github.com/Cardoselli/flight-pipeline.git
    cd flight-pipeline
 
 2. Copy the environment template and fill in your credentials:
    cp .env.example .env
 
 3. Start the containers:
-   cd docker
-   docker compose up -d
+   docker compose -f docker/docker-compose.yml --env-file .env up -d
 
 4. Access Adminer (database GUI) at http://localhost:8080
 

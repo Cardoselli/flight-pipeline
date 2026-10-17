@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: stg_flights
+    description: "Cleaned flight states from raw.flights. One row per aircraft per snapshot."
+    columns:
+      - name: icao24
+        description: "Unique ICAO 24-bit address of the transponder."
+        data_tests:
+          - not_null
+      - name: callsign
+        description: "Callsign of the vehicle (8 chars). Can be null."
+      - name: origin_country
+        description: "Country name inferred from the ICAO 24-bit address."
+        data_tests:
+          - not_null
+      - name: snapshot_time
+        description: "Timestamp of the snapshot (from raw data)."
+        data_tests:
+          - not_null
+      - name: last_contact
+        description: "Timestamp of the last update from the transponder."
+      - name: longitude
+        description: "WGS-84 longitude in decimal degrees."
+      - name: latitude
+        description: "WGS-84 latitude in decimal degrees."
+      - name: baro_altitude
+        description: "Barometric altitude in meters."
+      - name: geo_altitude
+        description: "Geometric altitude in meters."
+      - name: on_ground
+        description: "True if the aircraft is on the ground."
+      - name: velocity
+        description: "Velocity over ground in m/s."
+      - name: true_track
+        description: "True track in decimal degrees clockwise from north."
+      - name: vertical_rate
+        description: "Vertical rate in m/s. Positive = climbing, negative = descending."
+      - name: squawk
+        description: "Transponder code (squawk)."
+      - name: spi
+        description: "Special purpose indicator."
+      - name: position_source
+        description: "Origin of the position: 0=ADS-B, 1=ASTERIX, 2=MLAT, 3=FLARM."
+      - name: ingested_at
+        description: "Timestamp when the row was loaded into raw.flights."

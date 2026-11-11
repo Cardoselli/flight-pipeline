@@ -45,7 +45,7 @@ def load_json(filepath):
 def get_db_connection():
     """Create a connection to PostgreSQL using .env credentials."""
     return psycopg.connect(
-        host="localhost",
+        host=os.getenv("DBT_HOST", "localhost"),
         port=os.getenv("POSTGRES_PORT", "5432"),
         user=os.getenv("POSTGRES_USER"),
         password=os.getenv("POSTGRES_PASSWORD"),

@@ -1,0 +1,10 @@
+FROM apache/airflow:2.9.3
+
+# Installa le dipendenze Python del progetto
+COPY airflow/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Installa dbt
+RUN pip install --no-cache-dir \
+    dbt-core==1.8.7 \
+    dbt-postgres==1.8.2

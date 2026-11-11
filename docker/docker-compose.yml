@@ -54,8 +54,145 @@ services:
     networks:
       - flight_network
 
+  postgres-airflow:
+    image: postgres:16
+    container_name: flight_pipeline_postgres_airflow
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_airflow_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow -d airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - flight_network
+
+  airflow-init:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.airflow
+    image: flight_pipeline_airflow:latest
+    container_name: flight_pipeline_airflow_init
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+    volumes:
+      - ../airflow/dags:/opt/airflow/dags
+      - ../airflow/logs:/opt/airflow/logs
+      - ../airflow/plugins:/opt/airflow/plugins
+      - ../dbt:/opt/airflow/dbt
+      - ../ingestion:/opt/airflow/ingestion
+      - ../scripts:/opt/airflow/scripts
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com
+    networks:
+      - flight_network
+
+  airflow-webserver:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.airflow
+    image: flight_pipeline_airflow:latest
+    container_name: flight_pipeline_airflow_webserver
+    restart: unless-stopped
+    environment:
+      OPENSKY_CLIENT_ID: ${OPENSKY_CLIENT_ID}
+      OPENSKY_CLIENT_SECRET: ${OPENSKY_CLIENT_SECRET}
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'flight_pipeline_secret'
+      DBT_HOST: postgres
+      DBT_PORT: 5432
+      DBT_USER: ${POSTGRES_USER}
+      DBT_PASSWORD: ${POSTGRES_PASSWORD}
+      DBT_DBNAME: ${POSTGRES_DB}
+      DBT_SCHEMA: public
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    volumes:
+      - ../airflow/dags:/opt/airflow/dags
+      - ../airflow/logs:/opt/airflow/logs
+      - ../airflow/plugins:/opt/airflow/plugins
+      - ../dbt:/opt/airflow/dbt
+      - ../ingestion:/opt/airflow/ingestion
+      - ../scripts:/opt/airflow/scripts
+    ports:
+      - "8082:8080"
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    command: webserver
+    networks:
+      - flight_network
+
+  airflow-scheduler:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.airflow
+    image: flight_pipeline_airflow:latest
+    container_name: flight_pipeline_airflow_scheduler
+    restart: unless-stopped
+    environment:
+      OPENSKY_CLIENT_ID: ${OPENSKY_CLIENT_ID}
+      OPENSKY_CLIENT_SECRET: ${OPENSKY_CLIENT_SECRET}
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      DBT_HOST: postgres
+      DBT_PORT: 5432
+      DBT_USER: ${POSTGRES_USER}
+      DBT_PASSWORD: ${POSTGRES_PASSWORD}
+      DBT_DBNAME: ${POSTGRES_DB}
+      DBT_SCHEMA: public
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    volumes:
+      - ../airflow/dags:/opt/airflow/dags
+      - ../airflow/logs:/opt/airflow/logs
+      - ../airflow/plugins:/opt/airflow/plugins
+      - ../dbt:/opt/airflow/dbt
+      - ../ingestion:/opt/airflow/ingestion
+      - ../scripts:/opt/airflow/scripts
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    command: scheduler
+    networks:
+      - flight_network
+
 volumes:
   postgres_data:
+    driver: local
+  postgres_airflow_data:
     driver: local
 
 networks:
